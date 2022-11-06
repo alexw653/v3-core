@@ -609,6 +609,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
         Slot0 memory slot0Start = slot0;
 
+        // Checks initialization of slot0 and viability of execution
         require(slot0Start.unlocked, 'LOK');
         require(
             zeroForOne
@@ -618,7 +619,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         );
 
         slot0.unlocked = false;
-
+        
+        // Stores transaction information
         SwapCache memory cache = SwapCache({
             liquidityStart: liquidity,
             blockTimestamp: _blockTimestamp(),
@@ -630,6 +632,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
         bool exactInput = amountSpecified > 0;
 
+        // Stores tick information (i.e. what tick we're on and how to adjust fees and liquidity)
         SwapState memory state = SwapState({
             amountSpecifiedRemaining: amountSpecified,
             amountCalculated: 0,
@@ -643,9 +646,11 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         // continue swapping as long as we haven't used the entire input/output and haven't reached the price limit
         while (state.amountSpecifiedRemaining != 0 && state.sqrtPriceX96 != sqrtPriceLimitX96) {
             StepComputations memory step;
-
+            
+            // initializes starting tick of the step change
             step.sqrtPriceStartX96 = state.sqrtPriceX96;
 
+            // initializes next tick of the step change
             (step.tickNext, step.initialized) = tickBitmap.nextInitializedTickWithinOneWord(
                 state.tick,
                 tickSpacing,
